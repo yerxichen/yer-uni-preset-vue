@@ -1,6 +1,5 @@
 const fs = require('fs')
 const path = require('path')
-const fse = require('fs-extra')
 
 const isBinary = require('isbinaryfile')
 
@@ -40,7 +39,6 @@ module.exports = (api, options, rootOptions) => {
         '@dcloudio/uni-helper-json': '*'
       },
       devDependencies: {
-        "@babel/runtime": "~7.12.0",// 临时指定版本，7.13.x 会报错
         'postcss-comment': '^2.0.0',
         '@dcloudio/types': '*',
         'miniprogram-api-typings': '*',
@@ -115,34 +113,7 @@ module.exports = (api, options, rootOptions) => {
         })
       })
 
-      // 合并模板依赖
-      const jsonPath = path.join(tmp, './package.json')
-      if (fs.existsSync(jsonPath)) {
-        try {
-          const json = fs.readFileSync(jsonPath, { encoding: 'utf-8' })
-          content = JSON.parse(json)
-          api.extendPackage(pkg => {
-            return {
-              dependencies: Object.assign({}, content.dependencies),
-              devDependencies: Object.assign({}, content.devDependencies)
-            }
-          })
-        } catch (error) {
-          console.warn('package.json merge failed')
-        }
-      }
-
-      const dirNames = ['cloudfunctions-aliyun', 'cloudfunctions-tcb']
-      dirNames.forEach(dirName => {
-        const dirPath = path.join(tmp, './', dirName)
-        if(fs.existsSync(dirPath)) {
-          fse.moveSync(dirPath, path.join(tmp, '../', dirName), {
-            overwrite: true
-          })
-        }
-      })
-
-      await generate(path.join(tmp, '../'), files, path.join(base, '../'))
+      await generate(tmp, files, base)
     }
   })
 }
